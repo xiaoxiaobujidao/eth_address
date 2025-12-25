@@ -22,7 +22,13 @@ cargo build --release
 ./target/release/eth_address
 
 # 指定参数
-./target/release/eth_address --min-repeats 6 --threads 16
+./target/release/eth_address -c 6 -t 16
+
+# 生成5个靓号
+./target/release/eth_address -c 6 -l 5
+
+# 无限制生成（默认）
+./target/release/eth_address -c 6
 ```
 
 ### Docker 使用
@@ -32,21 +38,24 @@ cargo build --release
 docker pull ghcr.io/xiaoxiaobujidao/eth_address:latest
 
 # 运行（结果将保存在当前目录）
-docker run -v $(pwd):/app/output ghcr.io/xiaoxiaobujidao/eth_address:latest --min-repeats 6
+docker run -v $(pwd):/app/output ghcr.io/xiaoxiaobujidao/eth_address:latest -c 6
 
-# 持续生成模式
+# 生成5个靓号
 docker run -v $(pwd):/app/output ghcr.io/xiaoxiaobujidao/eth_address:latest \
-  --min-repeats 6 --continuous --count 5
+  -c 6 -l 5
+
+# 指定线程数和输出文件
+docker run -v $(pwd):/app/output ghcr.io/xiaoxiaobujidao/eth_address:latest \
+  -c 6 -t 16 -o my_addresses.txt
 ```
 
 ## 参数说明
 
-- `-m, --min-repeats <NUM>`: 最小重复字符位数（默认8位）
-- `-t, --threads <NUM>`: 线程数量（默认为CPU核心数的2倍）
+- `-c, --min-repeats <NUM>`: 最小重复字符位数（默认8位）
+- `-t, --threads <NUM>`: 线程数量（默认为CPU核心数）
+- `-l, --count <NUM>`: 生成靓号数量（默认不限制，0表示无限制）
+- `-o, --output <FILE>`: 输出文件路径（默认 eth_address.txt）
 - `-b, --batch-size <NUM>`: 批处理大小（默认1000）
-- `-o, --output <FILE>`: 输出文件路径（默认 vanity_addresses.txt）
-- `-c, --continuous`: 持续生成模式
-- `--count <NUM>`: 生成靓号数量（持续模式下有效）
 - `--stats-interval <SECS>`: 统计信息显示间隔（秒）
 
 ## 示例
@@ -54,7 +63,13 @@ docker run -v $(pwd):/app/output ghcr.io/xiaoxiaobujidao/eth_address:latest \
 生成6位重复字符的靓号：
 ```bash
 docker run -v $(pwd):/app/output ghcr.io/xiaoxiaobujidao/eth_address:latest \
-  --min-repeats 6 --threads 16
+  -c 6 -t 16
+```
+
+生成10个8位重复字符的靓号：
+```bash
+docker run -v $(pwd):/app/output ghcr.io/xiaoxiaobujidao/eth_address:latest \
+  -c 8 -l 10
 ```
 
 ## 安全警告

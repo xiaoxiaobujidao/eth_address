@@ -14,15 +14,15 @@ use std::io::Write;
 #[command(about = "极限性能以太坊靓号生成器")]
 struct Args {
     /// 最小重复字符位数（默认8位）
-    #[arg(short, long, default_value = "8")]
+    #[arg(short = 'c', long, default_value = "8")]
     min_repeats: usize,
     
-    /// 线程数量（默认为CPU核心数的2倍）
-    #[arg(short, long)]
+    /// 线程数量（默认为CPU核心数）
+    #[arg(short = 't', long)]
     threads: Option<usize>,
     
     /// 批处理大小（每次检查多少个地址）
-    #[arg(short, long, default_value = "1000")]
+    #[arg(short = 'b', long, default_value = "1000")]
     batch_size: usize,
     
     /// 显示统计信息的间隔（秒）
@@ -30,16 +30,12 @@ struct Args {
     stats_interval: u64,
     
     /// 输出文件路径（结果将保存到此文件）
-    #[arg(short, long, default_value = "vanity_addresses.txt")]
+    #[arg(short = 'o', long, default_value = "eth_address.txt")]
     output: String,
     
-    /// 持续生成模式（找到一个后继续查找）
-    #[arg(short, long)]
-    continuous: bool,
-    
-    /// 要生成的靓号数量（仅在持续模式下有效，0表示无限制）
-    #[arg(long, default_value = "1")]
-    count: usize,
+    /// 要生成的靓号数量（0或不指定表示无限制）
+    #[arg(short = 'l', long)]
+    count: Option<usize>,
 }
 
 /// 优化的重复字符检查函数
@@ -137,7 +133,7 @@ fn worker_optimized(
 }
 
 fn format_number(n: u64) -> String {
-    let mut s = n.to_string();
+    let s = n.to_string();
     let mut result = String::new();
     let chars: Vec<char> = s.chars().rev().collect();
     
@@ -177,12 +173,12 @@ fn main() {
     let args = Args::parse();
     
     let min_repeats = args.min_repeats;
-    // 使用CPU核心数的2倍线程以充分利用超线程
-    let thread_count = args.threads.unwrap_or_else(|| num_cpus::get() * 2);
+    // 使用CPU核心数作为默认线程数
+    let thread_count = args.threads.unwrap_or_else(|| num_cpus::get());
     let batch_size = args.batch_size;
     let output_file = args.output;
-    let continuous = args.continuous;
-    let target_count = if continuous && args.count > 0 { args.count } else if continuous { usize::MAX } else { 1 };
+    let target_count = args.count.unwrap_or(0);
+    let target_count = if target_count == 0 { usize::MAX } else { target_count };
     
     // 验证参数
     if min_repeats < 3 {
@@ -199,12 +195,10 @@ fn main() {
     println!("🧵 线程数: {}", thread_count);
     println!("📦 批处理大小: {}", batch_size);
     println!("📁 输出文件: {}", output_file);
-    if continuous {
-        if target_count == usize::MAX {
-            println!("🔄 持续生成模式: 无限制");
-        } else {
-            println!("🔄 持续生成模式: {} 个靓号", target_count);
-        }
+    if target_count == usize::MAX {
+        println!("🔄 生成模式: 无限制");
+    } else {
+        println!("🔄 生成模式: {} 个靓号", target_count);
     }
     println!();
     
@@ -266,7 +260,7 @@ fn main() {
                 println!();
                 println!("⚠️  请妥善保管私钥，不要泄露给任何人！");
                 
-                if continuous && found_count < target_count {
+                if found_count < target_count {
                     println!();
                     println!("🔄 继续查找下一个靓号... ({}/{})", found_count, if target_count == usize::MAX { "∞".to_string() } else { target_count.to_string() });
                     println!();
