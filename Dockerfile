@@ -1,5 +1,5 @@
 # 多阶段构建 - 第一阶段：构建
-FROM rust:1.75-slim as builder
+FROM rust:1.83-slim as builder
 
 WORKDIR /app
 
