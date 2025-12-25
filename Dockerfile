@@ -44,8 +44,8 @@ RUN mkdir -p /app/output
 # 设置工作目录
 WORKDIR /app/output
 
-# 设置入口点
-ENTRYPOINT ["eth_address"]
+# 设置入口点，使用 nice -n 19 将程序设置为最低优先级
+ENTRYPOINT ["nice", "-n", "19", "eth_address"]
 
 # 默认参数（可以在运行时覆盖）
 CMD ["--help"]
