@@ -1,0 +1,11 @@
+target/
+.git/
+.github/
+*.md
+.gitignore
+.dockerignore
+*.txt
+.cargo/
+flycheck*/
+rust-analyzer/
+
